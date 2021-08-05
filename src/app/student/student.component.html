@@ -1,0 +1,65 @@
+<div class="row">
+  <div class="col-12">
+<!-- <kendo-upload
+      [saveUrl]="uploadSaveUrl"
+      [removeUrl]="uploadRemoveUrl"
+      [restrictions]="myRestrictions">
+</kendo-upload> -->
+<!-- (upload)="onUploadEvent($event)" -->
+<kendo-upload
+      #upload
+      [autoUpload]="false"
+      (select)="onSelectEvent($event)"
+      [saveUrl]="uploadSaveUrl"
+      [removeUrl]="uploadRemoveUrl"
+      (remove)="onRemoveEvent($event, upload)"
+    >
+    </kendo-upload>
+    <div *ngIf="fileCount > 0" style="text-align: center; margin: 20px auto;">
+      <button
+        kendoButton
+        [primary]="true"
+        icon="close-outline"
+        look="outline"
+        (click)="onClearButtonClick(upload)"
+      >
+        Clear
+      </button>
+      <button
+        kendoButton
+        [primary]="true"
+        icon="check-outline"
+        (click)="onUploadButtonClick(upload)"
+        style="margin-left: 3px;"
+      >
+        Upload
+      </button>
+    </div>
+<kendo-grid 
+[data]="gridData" 
+(edit)="editHandler($event)" 
+(cancel)="cancelHandler($event)"
+(save)="saveHandler($event)" 
+(remove)="removeHandler($event)" 
+(add)="addHandler($event)">
+  <ng-template kendoGridToolbarTemplate>
+    <button kendoGridAddCommand>Add new</button>
+  </ng-template>
+  <kendo-grid-column field="name" title="Name"></kendo-grid-column>
+  <kendo-grid-column field="dob" title="DOB"></kendo-grid-column>
+  <kendo-grid-column field="email" title="Email"></kendo-grid-column>
+  <kendo-grid-command-column title="command">
+    <ng-template kendoGridCellTemplate let-isNew="isNew">
+      <button kendoGridEditCommand [primary]="true">Edit</button>
+      <button kendoGridRemoveCommand>Remove</button>
+      <button kendoGridSaveCommand>
+        {{ isNew ? "Add" : "Update" }}
+      </button>
+      <button kendoGridCancelCommand>
+        {{ isNew ? "Discard changes" : "Cancel" }}
+      </button>
+    </ng-template>
+  </kendo-grid-command-column>
+</kendo-grid>
+  </div>
+</div>
