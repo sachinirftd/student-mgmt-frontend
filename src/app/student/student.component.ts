@@ -8,7 +8,7 @@ import { Observable, Subscription } from 'rxjs';
 import { map } from "rxjs/operators";
 import { StudentVM } from '../shared/models/student.vm';
 import gql from 'graphql-tag';
-import { Student } from '../shared/types';
+import { Student, UpdateStudentInput } from '../shared/types';
 import { THIS_EXPR, variable } from '@angular/compiler/src/output/output_ast';
 
 @Component({
@@ -45,6 +45,27 @@ export class StudentComponent implements OnInit {
   constructor(private formBuilder: FormBuilder, private apollo: Apollo) {
     this.isNew = false;
 
+    this.getAllData();
+
+    // this.query = this.apollo.watchQuery({
+    //   query: gql`
+    //     query{
+    //         user{
+    //           id
+    //           name
+    //           email
+    //           dob
+    //           age
+    //           }
+    //         }`
+    // });
+
+    // this.query.valueChanges.subscribe(result => {
+    //   this.gridData = result.data && result.data.user;
+    // });
+  }
+
+  getAllData(): void {
     this.query = this.apollo.watchQuery({
       query: gql`
         query{
@@ -86,17 +107,46 @@ export class StudentComponent implements OnInit {
   }
 
   saveHandler(event: any) {
-    this.apollo.mutate({
-      mutation: gql`
-        mutation{
-  updateStudent(updateStudentInput:{id:25, name: "25", email:"fdsfsdf@fdsfsd", age: 70, dob:"2001-11-8" })
-}`,
-      variables: { updateStudentInput: { id: 2, name: "one", email: "fdsfsdf@fdsfsd", age: 70, dob: "2001-11-8" } }
-    }).subscribe(result => {
-      // this.gridData = result.data && result.data;
-      console.log(result, "RESULTS")
-    });
+    // const data: UpdateStudentInput = {
+    //   id: event.formGroup.value.id,
+    //   name: event.formGroup.value.name,
+    //   age: event.formGroup.value.age,
+    //   dob: event.formGroup.value.dob,
+    //   email: event.formGroup.value.email
+    // };
 
+    const id = event.formGroup.value.id;
+    const name = event.formGroup.value.name;
+    const age = event.formGroup.value.age;
+    const dob = event.formGroup.value.dob;
+    const email = event.formGroup.value.email;
+    //{ id: id , name: name, dob: dob, age: age, email: email}
+
+    const updatedMutation = gql`
+    mutation updateStudent($updateStudentInput: UpdateStudentInput!) {
+      updateStudent(updateStudentInput: $updateStudentInput)
+    }
+  `
+    this.apollo.mutate<any>({
+      mutation: updatedMutation,
+      variables: {
+        updateStudentInput: { id: id, name: name, dob: dob, age: age, email: email }
+      }
+    }).subscribe(result => this.getAllData(),
+      err => err
+    );
+    // this.apollo.mutate({
+    //   mutation: gql`
+    //       mutation updateStudent ($updateStudentInput: UpdateStudentInput!){
+    //         updateStudent (updateStudentInput: $updateStudentInput)
+    //       }
+    //     `,
+    //   variables: { updateStudentInput: { id: id } }
+    //   // variables: { updateStudentInput : {id: ${id}, name: ${name},email:${email},age: ${age},dob: ${dob} }   }
+    // }).subscribe(result => {
+    //   // this.gridData = result.data && result.data;
+    //   console.log(result, "RESULTS")
+    // });
 
     this.gridData[event.rowIndex] = event.formGroup.value;
     event.sender.closeRow(event.rowIndex);
@@ -104,6 +154,25 @@ export class StudentComponent implements OnInit {
 
   removeHandler(event: any) {
     this.gridData.splice(event.rowIndex, 1)
+    const id = event.dataItem.id;
+
+
+    const deleteMutation = gql`
+    mutation deleteStudent($deleteStudentInput: DeleteStudentInput!){
+      deleteStudent(deleteStudentInput: $deleteStudentInput)
+    }
+`
+
+    this.apollo.mutate<any>({
+      mutation: deleteMutation,
+      variables: {
+        deleteStudentInput: { id: id }
+      }
+    }).subscribe(result => this.getAllData(),
+      err => err
+    );
+
+
   }
 
   addHandler(event: any) {
@@ -125,7 +194,30 @@ export class StudentComponent implements OnInit {
   }
 
   public onUploadEvent(e: any) {
-    this.fileCount = 0;
+
+    const file = e.files[0].rawFile;
+
+    const uploadFileMutation = gql`
+    mutation file($file: Upload!) {
+      uploadFile(file: $file)
+    }
+  
+  `
+    let isSuccess: boolean = false;
+
+    this.apollo.mutate<any>({
+      mutation: uploadFileMutation,
+      variables: {
+        file: file
+      },
+      context: {
+        useMultipart: true
+      }
+    }).subscribe(result => this.getAllData(),
+      err => !isSuccess
+    );
+
+
   }
 
   public onRemoveEvent(e: any, upload: any) {

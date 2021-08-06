@@ -45,6 +45,7 @@
     "apollo-link": "^1.2.14",
     "cors": "^2.8.5",
     "graphql": "^15.5.1",
+    "graphql-scalars": "^1.10.0",
     "graphql-tag": "^2.12.5",
     "rxjs": "^6.6.7",
     "tslib": "^2.2.0",

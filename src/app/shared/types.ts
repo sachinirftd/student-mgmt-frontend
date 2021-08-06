@@ -5,14 +5,32 @@ export type Student = {
     age: number;
 }
 
+export type CreateStudentInput = {
+  id: number;
+  name: string;
+  dob: Date;
+  age: number;
+  email: string;
+}
+
+export type UpdateStudentInput = {
+  id: number;
+  name: string;
+  dob: Date;
+  age: number;
+  email: string;
+}
+
+
+
 export type Query = {
     user: Student[];
     sayHello: String;
   }
 
  export type Mutation = {
-    saveStudent(createStudentInput: Student): Student;
-    updateStudent(updateStudentInput: Student): number;
+    saveStudent(createStudentInput: CreateStudentInput): Student;
+    updateStudent(updateStudentInput: UpdateStudentInput): number;
     deleteStudent(deleteStudentInput: number): number;
-    // uploadFile(file: FileUpload): Boolean!
+    file(file: File): Boolean;
   }

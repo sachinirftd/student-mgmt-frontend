@@ -9,10 +9,11 @@
 <kendo-upload
       #upload
       [autoUpload]="false"
-      (select)="onSelectEvent($event)"
       [saveUrl]="uploadSaveUrl"
       [removeUrl]="uploadRemoveUrl"
+      (select)="onSelectEvent($event)"
       (remove)="onRemoveEvent($event, upload)"
+      (upload)="onUploadEvent($event)" 
     >
     </kendo-upload>
     <div *ngIf="fileCount > 0" style="text-align: center; margin: 20px auto;">
