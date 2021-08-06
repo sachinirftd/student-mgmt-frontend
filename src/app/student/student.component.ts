@@ -20,9 +20,11 @@ import { THIS_EXPR, variable } from '@angular/compiler/src/output/output_ast';
 export class StudentComponent implements OnInit {
 
   studentForm: FormGroup = this.formBuilder.group({
+    id: new FormControl(0, [Validators.required]),
     name: new FormControl('', [Validators.required]),
     dob: new FormControl('', [Validators.required]),
     email: new FormControl('', [Validators.required, Validators.email]),
+    age: new FormControl(0)
   });
   uploadSaveUrl = "http://localhost:3000/graphql"; // should represent an actual API endpoint
   uploadRemoveUrl = "http://localhost:3000/graphql"; // should represent an actual API endpoint
@@ -76,8 +78,10 @@ export class StudentComponent implements OnInit {
               dob
               age
               }
-            }`
-    });
+            }`,
+      fetchPolicy: "network-only"
+    },
+    );
 
     this.query.valueChanges.subscribe(result => {
       this.gridData = result.data && result.data.user;
@@ -88,22 +92,26 @@ export class StudentComponent implements OnInit {
 
   }
 
+  get idController(): AbstractControl | null { return this.studentForm.get('id'); }
   get nameController(): AbstractControl | null { return this.studentForm.get('name'); }
   get dobController(): AbstractControl | null { return this.studentForm.get('dob'); }
   get emailController(): AbstractControl | null { return this.studentForm.get('email'); }
+  get ageController(): AbstractControl | null { return this.studentForm.get('age'); }
 
   editHandler(event: any) {
     console.log(event, "EDIT EVENT")
     event.sender.editRow(event.rowIndex, this.studentForm);
     this.studentForm = this.formBuilder.group({
+      id: this.idController?.setValue(event.dataItem.id),
       name: this.nameController?.setValue(event.dataItem.name),
       dob: this.dobController?.setValue(event.dataItem.dob),
-      email: this.emailController?.setValue(event.dataItem.email)
+      email: this.emailController?.setValue(event.dataItem.email),
+      age: this.ageController?.setValue(event.dataItem.age)
     });
   }
 
   cancelHandler(event: any) {
-
+    event.sender.closeRow(event.rowIndex)
   }
 
   saveHandler(event: any) {
@@ -122,16 +130,19 @@ export class StudentComponent implements OnInit {
     const email = event.formGroup.value.email;
     //{ id: id , name: name, dob: dob, age: age, email: email}
 
+    console.log(id, "IDDD")
     const updatedMutation = gql`
-    mutation updateStudent($updateStudentInput: UpdateStudentInput!) {
-      updateStudent(updateStudentInput: $updateStudentInput)
-    }
-  `
-    this.apollo.mutate<any>({
+           mutation ($id: Float!, $name: String!, $email: String!, $age: Float!, $dob: DateTime!) {
+            updateStudent(
+              updateStudentInput: { id: $id, name: $name, email: $email, age: $age, dob: $dob }
+               ) {
+                __typename
+                }
+              }
+      `
+    this.apollo.mutate({
       mutation: updatedMutation,
-      variables: {
-        updateStudentInput: { id: id, name: name, dob: dob, age: age, email: email }
-      }
+      variables: { id: id, name: name, email: email, age: age, dob: dob }
     }).subscribe(result => this.getAllData(),
       err => err
     );
@@ -171,8 +182,6 @@ export class StudentComponent implements OnInit {
     }).subscribe(result => this.getAllData(),
       err => err
     );
-
-
   }
 
   addHandler(event: any) {
@@ -199,9 +208,8 @@ export class StudentComponent implements OnInit {
 
     const uploadFileMutation = gql`
     mutation file($file: Upload!) {
-      uploadFile(file: $file)
-    }
-  
+      uploadFile(file: $file) 
+    } 
   `
     let isSuccess: boolean = false;
 

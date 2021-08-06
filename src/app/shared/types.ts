@@ -1,14 +1,14 @@
 export type Student = {
     id: number;
     name: string;
-    dob: Date;
+    dob: string;
     age: number;
 }
 
 export type CreateStudentInput = {
   id: number;
   name: string;
-  dob: Date;
+  dob: string;
   age: number;
   email: string;
 }
@@ -16,9 +16,9 @@ export type CreateStudentInput = {
 export type UpdateStudentInput = {
   id: number;
   name: string;
-  dob: Date;
-  age: number;
+  dob: string;
   email: string;
+  age: number;
 }
 
 
@@ -30,7 +30,7 @@ export type Query = {
 
  export type Mutation = {
     saveStudent(createStudentInput: CreateStudentInput): Student;
-    updateStudent(updateStudentInput: UpdateStudentInput): number;
+    updateStudent(updateStudentInput: UpdateStudentInput): Student;
     deleteStudent(deleteStudentInput: number): number;
     file(file: File): Boolean;
   }
