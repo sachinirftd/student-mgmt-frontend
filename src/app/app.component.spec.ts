@@ -2,6 +2,10 @@ import { TestBed } from '@angular/core/testing';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { RouterTestingModule } from '@angular/router/testing';
 import { AppComponent } from './app.component';
+import { StudentModule } from './student/student.module';
+import { ApolloTestingController, ApolloTestingModule } from 'apollo-angular/testing';
+
+let backend: ApolloTestingController;
 
 describe('AppComponent', () => {
   beforeEach(async () => {
@@ -9,13 +13,19 @@ describe('AppComponent', () => {
       imports: [
         RouterTestingModule,
         ReactiveFormsModule,
-        FormsModule 
+        FormsModule,
+        StudentModule,
+        ApolloTestingModule
       ],
       declarations: [
         AppComponent
       ],
     }).compileComponents();
   });
+
+  beforeEach(() => {
+      backend = TestBed.get(ApolloTestingController);
+    });
 
   it('should create the app', () => {
     const fixture = TestBed.createComponent(AppComponent);

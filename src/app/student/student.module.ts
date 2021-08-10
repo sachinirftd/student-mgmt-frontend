@@ -10,6 +10,8 @@ import { GridModule } from '@progress/kendo-angular-grid';
 import { InputsModule } from '@progress/kendo-angular-inputs';
 import { LabelModule } from '@progress/kendo-angular-label';
 import { UploadsModule } from '@progress/kendo-angular-upload';
+import { NotificationModule } from '@progress/kendo-angular-notification';
+import { DialogsModule } from '@progress/kendo-angular-dialog';
 
 const routes: Routes = [
   { path: '', component: StudentComponent }
@@ -31,6 +33,8 @@ const routes: Routes = [
     GridModule,
     DropDownsModule,
     UploadsModule,
+    NotificationModule,
+    DialogsModule,
     RouterModule.forChild(routes),
   ]
 })

@@ -1,15 +1,15 @@
-import { Component, OnInit, Query, ViewEncapsulation } from '@angular/core';
+import { Component, OnInit, ViewEncapsulation } from '@angular/core';
 import { AbstractControl, FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import { GridDataResult } from '@progress/kendo-angular-grid';
 import { FileRestrictions } from '@progress/kendo-angular-upload';
-import { State } from '@progress/kendo-data-query';
 import { Apollo, QueryRef } from 'apollo-angular';
-import { Observable, Subscription } from 'rxjs';
-import { map } from "rxjs/operators";
+import { Observable } from 'rxjs';
 import { StudentVM } from '../shared/models/student.vm';
 import gql from 'graphql-tag';
-import { Student, UpdateStudentInput } from '../shared/types';
-import { THIS_EXPR, variable } from '@angular/compiler/src/output/output_ast';
+import { Student } from '../shared/types';
+import * as socketClusterClient from 'socketcluster-client';
+import { NotificationService } from '@progress/kendo-angular-notification';
+import { QueryAndMutation } from '../shared/graphql';
 
 @Component({
   selector: 'app-student',
@@ -29,6 +29,12 @@ export class StudentComponent implements OnInit {
   uploadSaveUrl = "http://localhost:3000/graphql"; // should represent an actual API endpoint
   uploadRemoveUrl = "http://localhost:3000/graphql"; // should represent an actual API endpoint
 
+  socket = socketClusterClient.create({
+    hostname: 'localhost',
+    port: 8000
+  });
+
+
   myRestrictions: FileRestrictions = {
     allowedExtensions: [".xlsx"],
   };
@@ -44,41 +50,14 @@ export class StudentComponent implements OnInit {
   private query !: QueryRef<any>;
   public fileCount = 0;
 
-  constructor(private formBuilder: FormBuilder, private apollo: Apollo) {
+  constructor(private formBuilder: FormBuilder, private apollo: Apollo, private notificationService: NotificationService) {
     this.isNew = false;
-
     this.getAllData();
-
-    // this.query = this.apollo.watchQuery({
-    //   query: gql`
-    //     query{
-    //         user{
-    //           id
-    //           name
-    //           email
-    //           dob
-    //           age
-    //           }
-    //         }`
-    // });
-
-    // this.query.valueChanges.subscribe(result => {
-    //   this.gridData = result.data && result.data.user;
-    // });
   }
 
-  getAllData(): void {
+  async getAllData(): Promise<void> {
     this.query = this.apollo.watchQuery({
-      query: gql`
-        query{
-            user{
-              id
-              name
-              email
-              dob
-              age
-              }
-            }`,
+      query: QueryAndMutation.GET_ALL_MUTATION,
       fetchPolicy: "network-only"
     },
     );
@@ -89,7 +68,6 @@ export class StudentComponent implements OnInit {
   }
 
   public ngOnInit(): void {
-
   }
 
   get idController(): AbstractControl | null { return this.studentForm.get('id'); }
@@ -98,8 +76,21 @@ export class StudentComponent implements OnInit {
   get emailController(): AbstractControl | null { return this.studentForm.get('email'); }
   get ageController(): AbstractControl | null { return this.studentForm.get('age'); }
 
+  /* update data */
+  async saveHandler(event: any) {
+    this.apollo.mutate({
+      mutation: QueryAndMutation.UPDATE_MUTATION,
+      variables: { id: event.formGroup.value.id, name: event.formGroup.value.name, email: event.formGroup.value.email, age: event.formGroup.value.age, dob: event.formGroup.value.dob }
+    }).subscribe(({ data }) => {
+      this.getAllData();
+    }, () => {
+      this.cancelHandler(event);
+    });
+
+    event.sender.closeRow(event.rowIndex);
+  }
+
   editHandler(event: any) {
-    console.log(event, "EDIT EVENT")
     event.sender.editRow(event.rowIndex, this.studentForm);
     this.studentForm = this.formBuilder.group({
       id: this.idController?.setValue(event.dataItem.id),
@@ -114,83 +105,26 @@ export class StudentComponent implements OnInit {
     event.sender.closeRow(event.rowIndex)
   }
 
-  saveHandler(event: any) {
-    // const data: UpdateStudentInput = {
-    //   id: event.formGroup.value.id,
-    //   name: event.formGroup.value.name,
-    //   age: event.formGroup.value.age,
-    //   dob: event.formGroup.value.dob,
-    //   email: event.formGroup.value.email
-    // };
-
-    const id = event.formGroup.value.id;
-    const name = event.formGroup.value.name;
-    const age = event.formGroup.value.age;
-    const dob = event.formGroup.value.dob;
-    const email = event.formGroup.value.email;
-    //{ id: id , name: name, dob: dob, age: age, email: email}
-
-    console.log(id, "IDDD")
-    const updatedMutation = gql`
-           mutation ($id: Float!, $name: String!, $email: String!, $age: Float!, $dob: DateTime!) {
-            updateStudent(
-              updateStudentInput: { id: $id, name: $name, email: $email, age: $age, dob: $dob }
-               ) {
-                __typename
-                }
-              }
-      `
-    this.apollo.mutate({
-      mutation: updatedMutation,
-      variables: { id: id, name: name, email: email, age: age, dob: dob }
-    }).subscribe(result => this.getAllData(),
-      err => err
-    );
-    // this.apollo.mutate({
-    //   mutation: gql`
-    //       mutation updateStudent ($updateStudentInput: UpdateStudentInput!){
-    //         updateStudent (updateStudentInput: $updateStudentInput)
-    //       }
-    //     `,
-    //   variables: { updateStudentInput: { id: id } }
-    //   // variables: { updateStudentInput : {id: ${id}, name: ${name},email:${email},age: ${age},dob: ${dob} }   }
-    // }).subscribe(result => {
-    //   // this.gridData = result.data && result.data;
-    //   console.log(result, "RESULTS")
-    // });
-
-    this.gridData[event.rowIndex] = event.formGroup.value;
-    event.sender.closeRow(event.rowIndex);
-  }
-
+  /* remove data from grid */
   removeHandler(event: any) {
-    this.gridData.splice(event.rowIndex, 1)
     const id = event.dataItem.id;
-
-
-    const deleteMutation = gql`
-    mutation deleteStudent($deleteStudentInput: DeleteStudentInput!){
-      deleteStudent(deleteStudentInput: $deleteStudentInput)
+    if(!confirm("Are you sure you want to DELETE this file?")) {
+      return;
     }
-`
-
     this.apollo.mutate<any>({
-      mutation: deleteMutation,
+      mutation: QueryAndMutation.DELETE_MUTATION,
       variables: {
         deleteStudentInput: { id: id }
       }
-    }).subscribe(result => this.getAllData(),
-      err => err
+    }).subscribe(async () => {
+      this.getAllData();
+    },
+      err => console.log('there was an error sending the query', err)
     );
   }
 
-  addHandler(event: any) {
-
-  }
-
-  public onUploadButtonClick(upload: any) {
+  public async onUploadButtonClick(upload: any) {
     upload.uploadFiles();
-    console.log(upload, "UPLOAD");
   }
 
   public onClearButtonClick(upload: any) {
@@ -202,32 +136,43 @@ export class StudentComponent implements OnInit {
     this.fileCount += 1;
   }
 
-  public onUploadEvent(e: any) {
-
+  /* upload excel file and save to db */
+  public async onUploadEvent(e: any) {
+    e.preventDefault();
     const file = e.files[0].rawFile;
-
-    const uploadFileMutation = gql`
-    mutation file($file: Upload!) {
-      uploadFile(file: $file) 
-    } 
-  `
-    let isSuccess: boolean = false;
+ 
+    let isSuccess = false;
 
     this.apollo.mutate<any>({
-      mutation: uploadFileMutation,
-      variables: {
-        file: file
-      },
+      mutation: QueryAndMutation.UPLOAD_FILE_MUTATION,
+      variables: { file: file },
       context: {
         useMultipart: true
       }
-    }).subscribe(result => this.getAllData(),
-      err => !isSuccess
+    }).subscribe(
+      () => {
+        isSuccess= true;
+      },
+      err => err
     );
-
-
+    /* get notification */
+    (async () => {
+      let myChannel = this.socket.subscribe('myChannel');
+      for await (let data of myChannel) {
+        this.notificationService.show({
+          content: `Upload : ${data}`,
+          animation: { type: 'slide', duration: 400 },
+          position: { horizontal: 'right', vertical: 'top' },
+          type: data === 'Success' ? { style: 'success', icon: true } : { style: 'warning', icon: true },
+          closable: true
+        });
+      }
+    })();
+    if(isSuccess) {
+      this.getAllData();
+    }
   }
-
+  /* remove excel */
   public onRemoveEvent(e: any, upload: any) {
     if (this.fileCount > 0) {
       this.fileCount -= 1;
