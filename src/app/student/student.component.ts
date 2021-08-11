@@ -46,13 +46,13 @@ export class StudentComponent implements OnInit {
   gridData: StudentVM[] = [];
   isNew: boolean;
   students: StudentVM[] = [];
-  allStudents!: Observable<Student[]>;
+  // allStudents!: Observable<Student[]>;
   private query !: QueryRef<any>;
   public fileCount = 0;
 
   constructor(private formBuilder: FormBuilder, private apollo: Apollo, private notificationService: NotificationService) {
     this.isNew = false;
-    this.getAllData();
+
   }
 
   async getAllData(): Promise<void> {
@@ -68,6 +68,7 @@ export class StudentComponent implements OnInit {
   }
 
   public ngOnInit(): void {
+    this.getAllData();
   }
 
   get idController(): AbstractControl | null { return this.studentForm.get('id'); }
@@ -106,9 +107,9 @@ export class StudentComponent implements OnInit {
   }
 
   /* remove data from grid */
-  removeHandler(event: any) {
+  removeHandler(event: any) : void{
     const id = event.dataItem.id;
-    if(!confirm("Are you sure you want to DELETE this file?")) {
+    if (!confirm("Are you sure you want to DELETE this file?")) {
       return;
     }
     this.apollo.mutate<any>({
@@ -136,12 +137,17 @@ export class StudentComponent implements OnInit {
     this.fileCount += 1;
   }
 
+  /* remove excel */
+  public onRemoveEvent(e: any, upload: any) {
+    if (this.fileCount > 0) {
+      this.fileCount -= 1;
+    }
+  }
+
   /* upload excel file and save to db */
   public async onUploadEvent(e: any) {
     e.preventDefault();
     const file = e.files[0].rawFile;
- 
-    let isSuccess = false;
 
     this.apollo.mutate<any>({
       mutation: QueryAndMutation.UPLOAD_FILE_MUTATION,
@@ -151,7 +157,7 @@ export class StudentComponent implements OnInit {
       }
     }).subscribe(
       () => {
-        isSuccess= true;
+        this.getAllData();
       },
       err => err
     );
@@ -168,14 +174,5 @@ export class StudentComponent implements OnInit {
         });
       }
     })();
-    if(isSuccess) {
-      this.getAllData();
-    }
-  }
-  /* remove excel */
-  public onRemoveEvent(e: any, upload: any) {
-    if (this.fileCount > 0) {
-      this.fileCount -= 1;
-    }
   }
 }

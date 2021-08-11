@@ -3,5 +3,5 @@ export interface StudentVM {
     name: string;
     dob: Date;
     email: string;
-    age: number;
+    age?: number;
 }

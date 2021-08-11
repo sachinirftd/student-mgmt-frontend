@@ -9,6 +9,7 @@ import { AppComponent } from './app.component';
 import { StudentModule } from './student/student.module';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import {HttpLinkModule, HttpLink} from 'apollo-angular-link-http';
+import { GraphQlModule } from './graph-ql/graph-ql.module';
 
 @NgModule({
   declarations: [
@@ -20,21 +21,22 @@ import {HttpLinkModule, HttpLink} from 'apollo-angular-link-http';
     AppRoutingModule,
     StudentModule,
     BrowserAnimationsModule,
-    HttpLinkModule
+    HttpLinkModule,
+    GraphQlModule
   ],
   providers: [
-    {
-      provide: APOLLO_OPTIONS,
-      useFactory: (httpLink: HttpLink) => {
-        return {
-          cache: new InMemoryCache({ addTypename: true }),
-          link: httpLink.create({
-            uri: 'http://localhost:3000/graphql',
-          }),
-        };
-      },
-      deps: [HttpLink],
-    },
+    // {
+    //   provide: APOLLO_OPTIONS,
+    //   useFactory: (httpLink: HttpLink) => {
+    //     return {
+    //       cache: new InMemoryCache({ addTypename: true }),
+    //       link: httpLink.create({
+    //         uri: 'http://localhost:3000/graphql',
+    //       }),
+    //     };
+    //   },
+    //   deps: [HttpLink],
+    // },
   ],
   bootstrap: [AppComponent]
 })

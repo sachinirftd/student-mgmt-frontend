@@ -36,6 +36,7 @@ const routes: Routes = [
     NotificationModule,
     DialogsModule,
     RouterModule.forChild(routes),
-  ]
+  ],
+  providers: []
 })
 export class StudentModule { }

@@ -16,7 +16,7 @@
       (save)="saveHandler($event)" (remove)="removeHandler($event)">
       <kendo-grid-column field="name" title="Name"></kendo-grid-column>
       <kendo-grid-column field="dob" title="DOB"></kendo-grid-column>
-      <kendo-grid-column field="age" title="Age"></kendo-grid-column>
+      <kendo-grid-column field="age" [editable]="false" title="Age"></kendo-grid-column>
       <kendo-grid-column field="email" title="Email"></kendo-grid-column>
       <kendo-grid-command-column title="command">
         <ng-template kendoGridCellTemplate let-isNew="isNew">

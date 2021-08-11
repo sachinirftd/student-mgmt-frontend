@@ -2,14 +2,15 @@ export type Student = {
     id: number;
     name: string;
     dob: string;
-    age: number;
+    age?: number;
+    email: string;
 }
 
 export type CreateStudentInput = {
   id: number;
   name: string;
   dob: string;
-  age: number;
+  age?: number;
   email: string;
 }
 
@@ -18,7 +19,7 @@ export type UpdateStudentInput = {
   name: string;
   dob: string;
   email: string;
-  age: number;
+  age?: number;
 }
 
 

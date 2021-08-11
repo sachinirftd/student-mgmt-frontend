@@ -11,9 +11,9 @@ const QueryAndMutation = {
   }
 `,
     UPDATE_MUTATION: gql`
-mutation ($id: Float!, $name: String!, $email: String!, $age: Float!, $dob: DateTime!) {
- updateStudent(
-   updateStudentInput: { id: $id, name: $name, email: $email, age: $age, dob: $dob }
+      mutation ($id: Float!, $name: String!, $email: String!, $age: Float!, $dob: DateTime!) {
+        updateStudent(
+          updateStudentInput: { id: $id, name: $name, email: $email, age: $age, dob: $dob }
     ) {
      __typename
      }
