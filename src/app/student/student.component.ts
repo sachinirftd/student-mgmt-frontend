@@ -1,15 +1,13 @@
 import { Component, OnInit, ViewEncapsulation } from '@angular/core';
 import { AbstractControl, FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
-import { GridDataResult } from '@progress/kendo-angular-grid';
+import { GridDataResult, PageChangeEvent } from '@progress/kendo-angular-grid';
 import { FileRestrictions } from '@progress/kendo-angular-upload';
-import { Apollo, QueryRef } from 'apollo-angular';
-import { Observable } from 'rxjs';
+import { QueryRef } from 'apollo-angular';
 import { StudentVM } from '../shared/models/student.vm';
-import gql from 'graphql-tag';
-import { Student } from '../shared/types';
 import * as socketClusterClient from 'socketcluster-client';
 import { NotificationService } from '@progress/kendo-angular-notification';
-import { QueryAndMutation } from '../shared/graphql';
+import { StudentService } from '../shared/services/student.service';
+import { URL } from './../../assets/environment'
 
 @Component({
   selector: 'app-student',
@@ -26,8 +24,8 @@ export class StudentComponent implements OnInit {
     email: new FormControl('', [Validators.required, Validators.email]),
     age: new FormControl(0)
   });
-  uploadSaveUrl = "http://localhost:3000/graphql"; // should represent an actual API endpoint
-  uploadRemoveUrl = "http://localhost:3000/graphql"; // should represent an actual API endpoint
+  uploadSaveUrl = URL.api_graphql; // should represent an actual API endpoint
+  uploadRemoveUrl = URL.api_graphql; // should represent an actual API endpoint
 
   socket = socketClusterClient.create({
     hostname: 'localhost',
@@ -49,22 +47,39 @@ export class StudentComponent implements OnInit {
   // allStudents!: Observable<Student[]>;
   private query !: QueryRef<any>;
   public fileCount = 0;
+  pageSize: number = 5;
+  skip: number = 0;
 
-  constructor(private formBuilder: FormBuilder, private apollo: Apollo, private notificationService: NotificationService) {
+  constructor(private formBuilder: FormBuilder, private notificationService: NotificationService, private studentService: StudentService) {
     this.isNew = false;
 
   }
 
   async getAllData(): Promise<void> {
-    this.query = this.apollo.watchQuery({
-      query: QueryAndMutation.GET_ALL_MUTATION,
-      fetchPolicy: "network-only"
-    },
-    );
-
+    // this.query = this.apollo.watchQuery({
+    //   query: QueryAndMutation.GET_ALL_MUTATION,
+    //   fetchPolicy: "network-only"
+    // },
+    // );
+    this.query = this.studentService.getAllStudents();
     this.query.valueChanges.subscribe(result => {
-      this.gridData = result.data && result.data.user;
+      if(result.data){
+      this.view = {
+        data: result.data.user.slice(this.skip, this.skip + this.pageSize),
+        total: result.data.user.length
+      }
+      this.gridData =  result.data.user;
+      }
     });
+  }
+
+  public pageChange(event: PageChangeEvent): void {
+    this.skip = event.skip;
+    this.view = {
+        data: this.gridData.slice(this.skip, this.skip + this.pageSize),
+        total: this.gridData.length
+      }
+    // this.loadItems();
   }
 
   public ngOnInit(): void {
@@ -79,15 +94,22 @@ export class StudentComponent implements OnInit {
 
   /* update data */
   async saveHandler(event: any) {
-    this.apollo.mutate({
-      mutation: QueryAndMutation.UPDATE_MUTATION,
-      variables: { id: event.formGroup.value.id, name: event.formGroup.value.name, email: event.formGroup.value.email, age: event.formGroup.value.age, dob: event.formGroup.value.dob }
-    }).subscribe(({ data }) => {
-      this.getAllData();
-    }, () => {
-      this.cancelHandler(event);
-    });
 
+    const mutation = this.studentService.updateStudent(event.formGroup.value.id, event.formGroup.value.name, event.formGroup.value.email, event.formGroup.value.age, event.formGroup.value.dob)
+    // this.apollo.mutate({
+    //   mutation: QueryAndMutation.UPDATE_MUTATION,
+    //   variables: { id: event.formGroup.value.id, name: event.formGroup.value.name, email: event.formGroup.value.email, age: event.formGroup.value.age, dob: event.formGroup.value.dob }
+    // }).subscribe(({ data }) => {
+    //   this.getAllData();
+    // }, () => {
+    //   this.cancelHandler(event);
+    // });
+
+    mutation.subscribe(() => {
+      this.getAllData();
+    }), () => {
+      this.cancelHandler(event);
+    }
     event.sender.closeRow(event.rowIndex);
   }
 
@@ -107,21 +129,28 @@ export class StudentComponent implements OnInit {
   }
 
   /* remove data from grid */
-  removeHandler(event: any) : void{
+  removeHandler(event: any): void {
     const id = event.dataItem.id;
     if (!confirm("Are you sure you want to DELETE this file?")) {
       return;
     }
-    this.apollo.mutate<any>({
-      mutation: QueryAndMutation.DELETE_MUTATION,
-      variables: {
-        deleteStudentInput: { id: id }
-      }
-    }).subscribe(async () => {
+    // this.apollo.mutate({
+    //   mutation: QueryAndMutation.DELETE_MUTATION,
+    //   variables: {
+    //     deleteStudentInput: { id: id }
+    //   }
+    // }).subscribe(async () => {
+    //   this.getAllData();
+    // },
+    //   err => console.log('there was an error sending the query', err)
+    // );
+
+    const mutation = this.studentService.deleteStudent(id);
+
+    mutation.subscribe(() => {
       this.getAllData();
     },
-      err => console.log('there was an error sending the query', err)
-    );
+      err => console.log('there was an error deleteing ', err))
   }
 
   public async onUploadButtonClick(upload: any) {
@@ -149,30 +178,46 @@ export class StudentComponent implements OnInit {
     e.preventDefault();
     const file = e.files[0].rawFile;
 
-    this.apollo.mutate<any>({
-      mutation: QueryAndMutation.UPLOAD_FILE_MUTATION,
-      variables: { file: file },
-      context: {
-        useMultipart: true
-      }
-    }).subscribe(
-      () => {
+    // this.apollo.mutate<any>({
+    //   mutation: QueryAndMutation.UPLOAD_FILE_MUTATION,
+    //   variables: { file: file },
+    //   context: {
+    //     useMultipart: true
+    //   }
+    // }).subscribe(
+    //   () => {
+    //     this.getAllData();
+    //   },
+    //   err => err
+    // );
+
+    const mutation = this.studentService.uploadFile(file);
+
+    mutation.then(() => {
+      setTimeout(() => {
         this.getAllData();
-      },
-      err => err
-    );
-    /* get notification */
-    (async () => {
-      let myChannel = this.socket.subscribe('myChannel');
-      for await (let data of myChannel) {
-        this.notificationService.show({
-          content: `Upload : ${data}`,
-          animation: { type: 'slide', duration: 400 },
-          position: { horizontal: 'right', vertical: 'top' },
-          type: data === 'Success' ? { style: 'success', icon: true } : { style: 'warning', icon: true },
-          closable: true
-        });
-      }
-    })();
+     }, 500);
+     this.handleNotification();
+      // this.getAllData();
+    }, () => {
+      // () => error;
+      this.handleNotification();
+    });
+  }
+  
+  /* get notification */
+  async handleNotification() {
+    // (async () => {
+    let myChannel = this.socket.subscribe('myChannel');
+    for await (let data of myChannel) {
+      this.notificationService.show({
+        content: `Upload : ${data}`,
+        animation: { type: 'slide', duration: 100 },
+        position: { horizontal: 'right', vertical: 'top' },
+        type: data === 'Success' ? { style: 'success', icon: true } : { style: 'warning', icon: true },
+        closable: true
+      });
+    }
+    // })();
   }
 }

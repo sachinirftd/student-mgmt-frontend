@@ -1,17 +1,17 @@
 import { gql } from "apollo-angular";
 
 const QueryAndMutation = {
-    UPLOAD_FILE_MUTATION: gql`
+  UPLOAD_FILE_MUTATION: gql`
     mutation file($file: Upload!){uploadFile(file: $file)
     } 
   `,
-    DELETE_MUTATION: gql`
+  DELETE_MUTATION: gql`
   mutation deleteStudent($deleteStudentInput: DeleteStudentInput!){
     deleteStudent(deleteStudentInput: $deleteStudentInput)
   }
 `,
-    UPDATE_MUTATION: gql`
-      mutation ($id: Float!, $name: String!, $email: String!, $age: Float!, $dob: DateTime!) {
+  UPDATE_MUTATION: gql`
+      mutation ($id: Int!, $name: String!, $email: String!, $age: Float!, $dob: DateTime!) {
         updateStudent(
           updateStudentInput: { id: $id, name: $name, email: $email, age: $age, dob: $dob }
     ) {
@@ -19,7 +19,7 @@ const QueryAndMutation = {
      }
    }
 `,
-    GET_ALL_MUTATION: gql`
+  GET_ALL_MUTATION: gql`
 query{
     user{
       id

@@ -1,14 +1,11 @@
 import { HttpClientModule } from '@angular/common/http';
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
-import { APOLLO_OPTIONS } from 'apollo-angular';
-// import { HttpLink } from 'apollo-angular/http';
-import { InMemoryCache } from '@apollo/client/core';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { StudentModule } from './student/student.module';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import {HttpLinkModule, HttpLink} from 'apollo-angular-link-http';
+import {HttpLinkModule} from 'apollo-angular-link-http';
 import { GraphQlModule } from './graph-ql/graph-ql.module';
 
 @NgModule({
@@ -42,7 +39,4 @@ import { GraphQlModule } from './graph-ql/graph-ql.module';
 })
 
 export class AppModule {
-  // constructor(httpLink: HttpLink) {
-  //   const link = httpLink.create({uri: 'http://localhost:3000/graphql'});
-  // }
 }

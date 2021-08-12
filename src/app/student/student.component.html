@@ -12,7 +12,8 @@
         Upload
       </button>
     </div>
-    <kendo-grid [data]="gridData" (edit)="editHandler($event)" (cancel)="cancelHandler($event)"
+    <kendo-grid [data]="view" [pageSize]="5" [skip]="2" (pageChange)="pageChange($event)"
+    [pageable]="true"(edit)="editHandler($event)" (cancel)="cancelHandler($event)"
       (save)="saveHandler($event)" (remove)="removeHandler($event)">
       <kendo-grid-column field="name" title="Name"></kendo-grid-column>
       <kendo-grid-column field="dob" title="DOB"></kendo-grid-column>
