@@ -1,5 +1,5 @@
 const URL = {
-    api_graphql:"http://localhost:3000/graphql",
+    api_apollo:"http://localhost:3002/graphql",
     api_request: "http://localhost:3001/graphql"
 }
 

@@ -36,7 +36,7 @@ export class StudentService {
   }
 
   async uploadFile(file: any) {
-    return await request(URL.api_graphql, QueryAndMutation.UPLOAD_FILE_MUTATION, {
+    return await request(URL.api_request, QueryAndMutation.UPLOAD_FILE_MUTATION, {
       file: file
     });
     // return this.apollo.mutate({

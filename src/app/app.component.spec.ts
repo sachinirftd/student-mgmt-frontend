@@ -1,11 +1,8 @@
 import { TestBed } from '@angular/core/testing';
-import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { RouterTestingModule } from '@angular/router/testing';
 import { AppComponent } from './app.component';
 import { StudentModule } from './student/student.module';
-import { ApolloTestingController, ApolloTestingModule } from 'apollo-angular/testing';
 import { GraphQlModule } from './graph-ql/graph-ql.module';
-import { ApolloTestingModuleCore } from 'apollo-angular/testing/module';
 import { HttpClientModule } from '@angular/common/http';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
@@ -13,6 +10,7 @@ import { HttpLink, HttpLinkModule } from 'apollo-angular-link-http';
 import { AppRoutingModule } from './app-routing.module';
 import { APOLLO_OPTIONS } from 'apollo-angular';
 import { InMemoryCache } from '@apollo/client/core';
+import { URL } from './../assets/environment'
 
 // let backend: ApolloTestingController;
 
@@ -39,7 +37,7 @@ describe('AppComponent', () => {
             return {
               cache: new InMemoryCache({ addTypename: true }),
               link: httpLink.create({
-                uri: 'http://localhost:3000/graphql',
+                uri: URL.api_apollo,
               }),
             };
           },

@@ -1,5 +1,5 @@
 export type Student = {
-    id: number;
+    id?: number;
     name: string;
     dob: string;
     age?: number;
@@ -7,7 +7,7 @@ export type Student = {
 }
 
 export type CreateStudentInput = {
-  id: number;
+  id?: number;
   name: string;
   dob: string;
   age?: number;

@@ -1,5 +1,5 @@
 export interface StudentVM {
-    id: number;
+    id?: number;
     name: string;
     dob: Date;
     email: string;

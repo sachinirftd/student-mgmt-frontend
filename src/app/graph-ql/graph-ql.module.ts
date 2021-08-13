@@ -4,11 +4,11 @@ import { InMemoryCache } from '@apollo/client/core';
 import { APOLLO_OPTIONS } from 'apollo-angular';
 import { URL } from './../../assets/environment'
 
-const uri = URL.api_graphql;
+const uri = URL.api_apollo;
 
 export function createApollo(httpLink: HttpLink) {
     return {
-        link: httpLink.create({ uri: uri }),
+        link: httpLink.create({ uri: uri }),   
         cache: new InMemoryCache(),
     };
 }

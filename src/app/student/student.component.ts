@@ -24,8 +24,8 @@ export class StudentComponent implements OnInit {
     email: new FormControl('', [Validators.required, Validators.email]),
     age: new FormControl(0)
   });
-  uploadSaveUrl = URL.api_graphql; // should represent an actual API endpoint
-  uploadRemoveUrl = URL.api_graphql; // should represent an actual API endpoint
+  uploadSaveUrl = URL.api_apollo; // should represent an actual API endpoint
+  uploadRemoveUrl = URL.api_apollo; // should represent an actual API endpoint
 
   socket = socketClusterClient.create({
     hostname: 'localhost',
