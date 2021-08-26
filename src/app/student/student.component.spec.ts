@@ -75,7 +75,7 @@ describe('StudentComponent', () => {
         dob: new Date("2000-12-12")
       }
     ];
-    mockObject = jasmine.createSpyObj(['removeHandler', ['saveHandler']]);
+    mockObject = jasmine.createSpyObj(['saveHandler']);
 
   })
 
@@ -84,8 +84,9 @@ describe('StudentComponent', () => {
   });
 
   it('should get all data', () => {
+    const gridDataLength = 2;
     component.getAllData();
-    expect(component.getAllData).toBeTruthy();
+    expect(gridDataLength).toEqual(2);
   });
 
   it('should select excel to upload', () => {
@@ -121,7 +122,6 @@ describe('StudentComponent', () => {
     it('should save students', () => {
     component.gridData.length = 2;
     mockObject.saveHandler.and.returnValue(of(true));
-    // component.saveHandler('event');
     expect(component.gridData.length).toBeGreaterThan(0);
   })
 });

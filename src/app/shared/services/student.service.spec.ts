@@ -4,6 +4,7 @@ import { StudentService } from './student.service';
 
 describe('StudentService', () => {
   let service: StudentService;
+  const userServiceSpy = jasmine.createSpyObj<StudentService>('StudentService', ['getAllStudents'], );
 
   beforeEach(() => {
     TestBed.configureTestingModule({});
@@ -12,5 +13,9 @@ describe('StudentService', () => {
 
   it('should be created', () => {
     expect(service).toBeTruthy();
+  });
+
+  it('should call gell all students', () => {
+    expect(service.getAllStudents).toBeTruthy();
   });
 });
