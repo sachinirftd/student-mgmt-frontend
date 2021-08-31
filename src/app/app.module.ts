@@ -22,18 +22,6 @@ import { GraphQlModule } from './graph-ql/graph-ql.module';
     GraphQlModule
   ],
   providers: [
-    // {
-    //   provide: APOLLO_OPTIONS,
-    //   useFactory: (httpLink: HttpLink) => {
-    //     return {
-    //       cache: new InMemoryCache({ addTypename: true }),
-    //       link: httpLink.create({
-    //         uri: 'http://localhost:3000/graphql',
-    //       }),
-    //     };
-    //   },
-    //   deps: [HttpLink],
-    // },
   ],
   bootstrap: [AppComponent]
 })
