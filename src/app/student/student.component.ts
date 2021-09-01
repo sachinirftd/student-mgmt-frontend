@@ -14,6 +14,7 @@ import * as socketClusterClient from 'socketcluster-client';
 import { NotificationService } from '@progress/kendo-angular-notification';
 import { StudentService } from '../shared/services/student.service';
 import { URL } from './../../assets/environment';
+import { throwError } from 'rxjs';
 
 @Component({
   selector: 'app-student',
@@ -114,6 +115,7 @@ export class StudentComponent implements OnInit {
     );
 
     mutation.subscribe(() => {
+      this.crudNotification("Successfully Updated");
       this.getAllData();
     }),
       () => {
@@ -147,9 +149,10 @@ export class StudentComponent implements OnInit {
 
     mutation.subscribe(
       () => {
+        this.crudNotification("Successfully Deleted");
         this.getAllData();
       },
-      (err) => console.log('there was an error deleteing ', err)
+      (err) => {throwError}
     );
   }
 
@@ -182,14 +185,9 @@ export class StudentComponent implements OnInit {
 
     mutation.then(
       () => {
-        setTimeout(() => {
-          this.getAllData();
-        }, 500);
         this.handleNotification();
       },
-      () => {
-        this.handleNotification();
-      }
+      (error) => { throwError }
     );
   }
 
@@ -198,17 +196,32 @@ export class StudentComponent implements OnInit {
     // (async () => {
     let myChannel = this.socket.subscribe('myChannel');
     for await (let data of myChannel) {
-      this.notificationService.show({
-        content: `Upload : ${data}`,
-        animation: { type: 'slide', duration: 100 },
-        position: { horizontal: 'right', vertical: 'top' },
-        type:
-          data === 'Success'
-            ? { style: 'success', icon: true }
-            : { style: 'warning', icon: true },
-        closable: true,
-      });
+      if(data) {
+        this.notificationService.show({
+          content: `Upload : ${data}`,
+          animation: { type: 'slide', duration: 5 },
+          hideAfter: 5,
+          position: { horizontal: 'right', vertical: 'top' },
+          type:
+            data === 'Success'
+              ? { style: 'success', icon: true }
+              : { style: 'warning', icon: true },
+          closable: true,
+        });
+        this.getAllData();
+      }
     }
     // })();
   }
+
+  public crudNotification(message: string): void {
+    this.notificationService.show({
+      content: message,
+      hideAfter: 600,
+      position: { horizontal: 'right', vertical: 'top' },
+      animation: { type: 'fade', duration: 400 },
+      type: { style: 'success', icon: true },
+    });
+  }
+
 }

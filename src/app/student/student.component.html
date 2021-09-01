@@ -1,23 +1,57 @@
 <div class="row">
   <div class="col-12">
-    <kendo-upload #upload [autoUpload]="false" [saveUrl]="uploadSaveUrl" [removeUrl]="uploadRemoveUrl"
-      (select)="onSelectEvent($event)" (remove)="onRemoveEvent($event, upload)" (upload)="onUploadEvent($event)">
+    <kendo-upload
+      #upload
+      [autoUpload]="false"
+      [saveUrl]="uploadSaveUrl"
+      [removeUrl]="uploadRemoveUrl"
+      (select)="onSelectEvent($event)"
+      (remove)="onRemoveEvent($event, upload)"
+      (upload)="onUploadEvent($event)"
+    >
     </kendo-upload>
-    <div *ngIf="fileCount > 0" style="text-align: center; margin: 20px auto;">
-      <button kendoButton [primary]="true" icon="close-outline" look="outline" (click)="onClearButtonClick(upload)">
+    <div *ngIf="fileCount > 0" style="text-align: center; margin: 20px auto">
+      <button
+        kendoButton
+        [primary]="true"
+        icon="close-outline"
+        look="outline"
+        (click)="onClearButtonClick(upload)"
+      >
         Clear
       </button>
-      <button kendoButton [primary]="true" icon="check-outline" (click)="onUploadButtonClick(upload)"
-        style="margin-left: 3px;">
+      <button
+        kendoButton
+        [primary]="true"
+        icon="check-outline"
+        (click)="onUploadButtonClick(upload)"
+        style="margin-left: 3px"
+      >
         Upload
       </button>
     </div>
-    <kendo-grid [data]="view" [pageSize]="5" [skip]="2" (pageChange)="pageChange($event)"
-    [pageable]="true"(edit)="editHandler($event)" (cancel)="cancelHandler($event)"
-      (save)="saveHandler($event)" (remove)="removeHandler($event)">
+    <kendo-grid
+      [data]="view"
+      [pageSize]="5"
+      [skip]="2"
+      (pageChange)="pageChange($event)"
+      [pageable]="true"
+      (edit)="editHandler($event)"
+      (cancel)="cancelHandler($event)"
+      (save)="saveHandler($event)"
+      (remove)="removeHandler($event)"
+    >
       <kendo-grid-column field="name" title="Name"></kendo-grid-column>
-      <kendo-grid-column field="dob" title="DOB"></kendo-grid-column>
-      <kendo-grid-column field="age" [editable]="false" title="Age"></kendo-grid-column>
+      <kendo-grid-column field="dob" title="DOB" filter="date" type="date">
+        <ng-template kendoGridCellTemplate let-dataItem>
+          {{ dataItem.dob | date: "YYYY-MM-dd" }}
+        </ng-template>
+      </kendo-grid-column>
+      <kendo-grid-column
+        field="age"
+        [editable]="false"
+        title="Age"
+      ></kendo-grid-column>
       <kendo-grid-column field="email" title="Email"></kendo-grid-column>
       <kendo-grid-command-column title="command">
         <ng-template kendoGridCellTemplate let-isNew="isNew">
